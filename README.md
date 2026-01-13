@@ -1,31 +1,42 @@
-Converter - Phase 1 (Auth scaffold)
+# Nova PDF - Modern File Converter
 
-This repository includes a minimal ASP.NET Core backend and a small frontend to handle user registration and login (phase-1).
+Nova PDF is a powerful, user-friendly file conversion tool designed with a sleek purplish theme and intuitive interface. 
 
-Quick steps (macOS):
+## Features
 
-1. Start SQL Server in Docker:
+- **Guest Access Mode**: Convert files instantly without logging in.
+- **Image to PDF**: High-quality conversion for JPG, PNG, and more.
+- **Conversion History**: Track your past activities (for registered users).
+- **Direct Support**: Send support requests effortlessly.
+- **Modern & Responsive UI**: Built with glassmorphism and a consistent brand identity.
+- **Secure Authentication**: Email verification and password recovery.
 
-```bash
-cd Converter
-docker compose up -d
-```
+## Tech Stack
 
-2. Restore and run the API:
+- **Backend**: .NET Core Web API, Entity Framework Core, SQL Server.
+- **Frontend**: HTML5, Vanilla CSS3 (Custom Design System), JavaScript (ES6+).
+- **PDF Engine**: PdfSharpCore.
 
-```bash
-cd backend
-dotnet restore
-dotnet tool install --global dotnet-ef --version 7.* || true
-dotnet ef migrations add Initial -p ConverterApi.csproj -s ConverterApi.csproj
-dotnet ef database update -p ConverterApi.csproj -s ConverterApi.csproj
-dotnet run
-```
+## Getting Started
 
-3. Open frontend at frontend/index.html (open directly in browser).
+### Local Development
 
-Connect Azure Data Studio to the database at `localhost,1433` using username `sa` and password `Your_password123`.
+1. **Backend**:
+   ```bash
+   cd backend
+   dotnet run
+   ```
+2. **Frontend**:
+   ```bash
+   cd frontend
+   python3 -m http.server 8000
+   ```
 
-Notes:
-- The API uses JWT for login responses. Passwords are salted+hashed.
-- This is a minimal scaffold for phase‑1. Next: file-conversion endpoints and public upload.
+3. Open `http://localhost:8000` in your browser.
+
+## Deployment
+
+Check [deployment_guide.md](deployment_guide.md) for detailed instructions on moving to production.
+
+---
+Developed with ❤️ by Nova PDF Team.
