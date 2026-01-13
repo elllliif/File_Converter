@@ -27,7 +27,14 @@ builder.Services.AddSwaggerGen();
 
 var cs = builder.Configuration.GetConnectionString("DefaultConnection");
 Console.WriteLine("CONNSTR LEN = " + (cs?.Length ?? 0));
-builder.Services.AddDbContext<AppDbContext>(opt => opt.UseSqlServer(cs));
+builder.Services.AddDbContext<AppDbContext>(opt =>
+    opt.UseSqlServer(cs, sql =>
+        sql.EnableRetryOnFailure(
+            maxRetryCount: 10,
+            maxRetryDelay: TimeSpan.FromSeconds(30),
+            errorNumbersToAdd: null)));
+
+
 
 
 var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!);
