@@ -58,13 +58,19 @@ _ = Task.Run(async () => {
         var db = services.GetRequiredService<AppDbContext>();
         try 
         { 
+            var connectionString = app.Configuration.GetConnectionString("DefaultConnection");
             logger.LogInformation("Background migration starting...");
             
+            if (!string.IsNullOrEmpty(connectionString)) {
+                var builder = new Microsoft.Data.SqlClient.SqlConnectionStringBuilder(connectionString);
+                logger.LogInformation("Attempting connection to Host: {DataSource}, DB: {InitialCatalog}", builder.DataSource, builder.InitialCatalog);
+            }
+
             // Render'ın dış dünyaya hangi IP ile çıktığını öğrenmek için:
             try {
                 using var client = new HttpClient();
                 var outboundIp = await client.GetStringAsync("https://api.ipify.org");
-                logger.LogInformation("Render Server Outbound IP: {OutboundIp}", outboundIp.Trim());
+                logger.LogInformation("Render Server Outbound IP (for Azure Firewall): {OutboundIp}", outboundIp.Trim());
             } catch (Exception ex) {
                 logger.LogWarning("Could not determine outbound IP: {Message}", ex.Message);
             }
@@ -74,7 +80,7 @@ _ = Task.Run(async () => {
         } 
         catch (Exception ex) 
         { 
-            logger.LogError(ex, "Background migration failed. Still waiting for Azure Firewall whitelist.");
+            logger.LogError(ex, "Background migration failed. Confirm environment variables are set correctly in Render.");
         }
     }
 });
