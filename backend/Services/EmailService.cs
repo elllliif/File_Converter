@@ -55,7 +55,9 @@ namespace ConverterApi.Services
             {
                 using (var client = new SmtpClient())
                 {
-                    await client.ConnectAsync(smtpServer, smtpPort, MailKit.Security.SecureSocketOptions.StartTls);
+                    client.Timeout = 5000; // 5 saniye zaman aşımı
+                    var options = smtpPort == 465 ? MailKit.Security.SecureSocketOptions.SslOnConnect : MailKit.Security.SecureSocketOptions.StartTls;
+                    await client.ConnectAsync(smtpServer, smtpPort, options);
                     await client.AuthenticateAsync(smtpUsername, smtpPassword);
                     await client.SendAsync(message);
                     await client.DisconnectAsync(true);
@@ -101,7 +103,9 @@ namespace ConverterApi.Services
                 _logger.LogInformation("SMTP Attempt: Server={Server}, Port={Port}, User={User}", smtpServer, smtpPort, smtpUsername);
                 using (var client = new SmtpClient())
                 {
-                    await client.ConnectAsync(smtpServer, smtpPort, MailKit.Security.SecureSocketOptions.StartTls);
+                    client.Timeout = 5000; // 5 saniye zaman aşımı
+                    var options = smtpPort == 465 ? MailKit.Security.SecureSocketOptions.SslOnConnect : MailKit.Security.SecureSocketOptions.StartTls;
+                    await client.ConnectAsync(smtpServer, smtpPort, options);
                     await client.AuthenticateAsync(smtpUsername, smtpPassword);
                     await client.SendAsync(message);
                     await client.DisconnectAsync(true);
