@@ -15,7 +15,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendOnly", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins(frontendUrl)
               .AllowAnyMethod()
               .AllowAnyHeader();
     });
@@ -49,30 +49,25 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    var logger = services.GetRequiredService<ILogger<Program>>();
-    var db = services.GetRequiredService<AppDbContext>();
-    
-    try 
-    { 
-        var connectionString = app.Configuration.GetConnectionString("DefaultConnection");
-        if (!string.IsNullOrEmpty(connectionString))
-        {
-            // Mask password for safety in logs
-            var maskedCs = System.Text.RegularExpressions.Regex.Replace(connectionString, "Password=[^;]+", "Password=***");
-            logger.LogInformation("Attempting migration with connection: {ConnectionString}", maskedCs);
+// Migration'ı arka planda çalıştırarak startup timeout'u engelle (Hata olsa bile uygulama açık kalsın)
+_ = Task.Run(async () => {
+    using (var scope = app.Services.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        var db = services.GetRequiredService<AppDbContext>();
+        try 
+        { 
+            logger.LogInformation("Background migration starting...");
+            await db.Database.MigrateAsync(); 
+            logger.LogInformation("Database migration completed successfully.");
+        } 
+        catch (Exception ex) 
+        { 
+            logger.LogError(ex, "Background migration failed. Still waiting for Azure Firewall whitelist.");
         }
-        
-        db.Database.Migrate(); 
-        logger.LogInformation("Database migration completed successfully.");
-    } 
-    catch (Exception ex) 
-    { 
-        logger.LogError(ex, "An error occurred during database migration. Check Azure Firewall and Connection String.");
     }
-}
+});
 
 // Swagger'ı prod'da da görmek istersen bunu kaldırma:
 app.UseSwagger();
@@ -84,6 +79,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
+// Render'ın IP'sini öğrenmek için kritik endpoint:
 app.MapGet("/ip", (HttpContext ctx) => Results.Ok(new { ip = ctx.Connection.RemoteIpAddress?.ToString() }));
 
 app.Run();
