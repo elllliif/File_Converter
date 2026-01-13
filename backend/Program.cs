@@ -7,7 +7,6 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
 var frontendUrl = builder.Configuration["FRONTEND_URL"] ?? "https://file-converter-phi-nine.vercel.app";
 
@@ -27,7 +26,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var cs = builder.Configuration.GetConnectionString("DefaultConnection");
+Console.WriteLine("CONNSTR LEN = " + (cs?.Length ?? 0));
 builder.Services.AddDbContext<AppDbContext>(opt => opt.UseSqlServer(cs));
+
 
 var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!);
 builder.Services.AddAuthentication(options =>
