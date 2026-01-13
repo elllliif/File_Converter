@@ -51,8 +51,27 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    try { db.Database.Migrate(); } catch { }
+    var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    var db = services.GetRequiredService<AppDbContext>();
+    
+    try 
+    { 
+        var connectionString = app.Configuration.GetConnectionString("DefaultConnection");
+        if (!string.IsNullOrEmpty(connectionString))
+        {
+            // Mask password for safety in logs
+            var maskedCs = System.Text.RegularExpressions.Regex.Replace(connectionString, "Password=[^;]+", "Password=***");
+            logger.LogInformation("Attempting migration with connection: {ConnectionString}", maskedCs);
+        }
+        
+        db.Database.Migrate(); 
+        logger.LogInformation("Database migration completed successfully.");
+    } 
+    catch (Exception ex) 
+    { 
+        logger.LogError(ex, "An error occurred during database migration. Check Azure Firewall and Connection String.");
+    }
 }
 
 // Swagger'ı prod'da da görmek istersen bunu kaldırma:
