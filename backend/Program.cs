@@ -79,7 +79,11 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// Render'ın IP'sini öğrenmek için kritik endpoint:
-app.MapGet("/ip", (HttpContext ctx) => Results.Ok(new { ip = ctx.Connection.RemoteIpAddress?.ToString() }));
+// Render'ın gerçek IP'sini öğrenmek için X-Forwarded-For başlığına bakan kritik endpoint:
+app.MapGet("/ip", (HttpContext ctx) => {
+    var forwarded = ctx.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+    if (!string.IsNullOrEmpty(forwarded)) return Results.Ok(new { ip = forwarded.Split(',')[0] });
+    return Results.Ok(new { ip = ctx.Connection.RemoteIpAddress?.ToString() });
+});
 
 app.Run();
