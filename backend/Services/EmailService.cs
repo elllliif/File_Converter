@@ -24,12 +24,12 @@ namespace ConverterApi.Services
 
         public async Task SendPasswordResetEmailAsync(string toEmail, string resetToken, string resetLink)
         {
-            var smtpServer = _config["Email:SmtpServer"];
-            var smtpPort = int.Parse(_config["Email:SmtpPort"] ?? "587");
-            var fromEmail = _config["Email:FromEmail"];
-            var fromName = _config["Email:FromName"];
-            var smtpUsername = _config["Email:SmtpUsername"];
-            var smtpPassword = _config["Email:SmtpPassword"];
+            var smtpServer = _config["Email:SmtpServer"]?.Trim();
+            var smtpPort = int.Parse(_config["Email:SmtpPort"]?.Trim() ?? "587");
+            var fromEmail = _config["Email:FromEmail"]?.Trim();
+            var fromName = _config["Email:FromName"]?.Trim();
+            var smtpUsername = _config["Email:SmtpUsername"]?.Trim();
+            var smtpPassword = _config["Email:SmtpPassword"]?.Trim();
 
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress(fromName, fromEmail));
@@ -70,12 +70,12 @@ namespace ConverterApi.Services
 
         public async Task SendVerificationEmailAsync(string toEmail, string verificationLink)
         {
-            var smtpServer = _config["Email:SmtpServer"];
-            var smtpPort = int.Parse(_config["Email:SmtpPort"] ?? "587");
-            var fromEmail = _config["Email:FromEmail"];
-            var fromName = _config["Email:FromName"];
-            var smtpUsername = _config["Email:SmtpUsername"];
-            var smtpPassword = _config["Email:SmtpPassword"];
+            var smtpServer = _config["Email:SmtpServer"]?.Trim();
+            var smtpPort = int.Parse(_config["Email:SmtpPort"]?.Trim() ?? "587");
+            var fromEmail = _config["Email:FromEmail"]?.Trim();
+            var fromName = _config["Email:FromName"]?.Trim();
+            var smtpUsername = _config["Email:SmtpUsername"]?.Trim();
+            var smtpPassword = _config["Email:SmtpPassword"]?.Trim();
 
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress(fromName, fromEmail));
