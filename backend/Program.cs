@@ -59,6 +59,16 @@ _ = Task.Run(async () => {
         try 
         { 
             logger.LogInformation("Background migration starting...");
+            
+            // Render'ın dış dünyaya hangi IP ile çıktığını öğrenmek için:
+            try {
+                using var client = new HttpClient();
+                var outboundIp = await client.GetStringAsync("https://api.ipify.org");
+                logger.LogInformation("Render Server Outbound IP: {OutboundIp}", outboundIp.Trim());
+            } catch (Exception ex) {
+                logger.LogWarning("Could not determine outbound IP: {Message}", ex.Message);
+            }
+
             await db.Database.MigrateAsync(); 
             logger.LogInformation("Database migration completed successfully.");
         } 
