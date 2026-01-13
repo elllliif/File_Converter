@@ -90,13 +90,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 document.getElementById('register-form').addEventListener('submit', async e => {
   e.preventDefault();
   const f = e.target;
-  const firstName = f.firstName.value;
-  const lastName = f.lastName.value;
-  const email = f.email.value;
-  const password = f.password.value;
-  const confirmPassword = f.confirmPassword.value;
+  const firstName = f.firstName.value.trim();
+  const lastName = f.lastName.value.trim();
+  const email = f.email.value.trim();
+  const password = f.password.value.trim();
+  const confirmPassword = f.confirmPassword.value.trim();
   const countryCode = f.countryCode.value;
-  const phone = f.phone.value;
+  const phone = f.phone.value.trim();
 
   if (!firstName || !lastName || !email || !password || !confirmPassword) { setStatus('Tüm alanlar gerekli', 'error'); return; }
   if (password !== confirmPassword) { setStatus('Şifreler eşleşmiyor', 'error'); return; }
