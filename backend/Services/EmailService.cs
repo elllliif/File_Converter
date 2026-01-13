@@ -14,10 +14,12 @@ namespace ConverterApi.Services
     public class EmailService : IEmailService
     {
         private readonly IConfiguration _config;
+        private readonly Microsoft.Extensions.Logging.ILogger<EmailService> _logger;
 
-        public EmailService(IConfiguration config)
+        public EmailService(IConfiguration config, Microsoft.Extensions.Logging.ILogger<EmailService> logger)
         {
             _config = config;
+            _logger = logger;
         }
 
         public async Task SendPasswordResetEmailAsync(string toEmail, string resetToken, string resetLink)
@@ -96,6 +98,7 @@ namespace ConverterApi.Services
 
             try
             {
+                _logger.LogInformation("SMTP Attempt: Server={Server}, Port={Port}, User={User}", smtpServer, smtpPort, smtpUsername);
                 using (var client = new SmtpClient())
                 {
                     await client.ConnectAsync(smtpServer, smtpPort, MailKit.Security.SecureSocketOptions.StartTls);
@@ -103,10 +106,11 @@ namespace ConverterApi.Services
                     await client.SendAsync(message);
                     await client.DisconnectAsync(true);
                 }
+                _logger.LogInformation("Verification Email sent successfully to {Email}", toEmail);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                System.Console.WriteLine($"Verification Email failed: {ex.Message}");
+                _logger.LogError(ex, "STMP Error: Verification Email failed for {Email}. Message: {Message}", toEmail, ex.Message);
             }
         }
     }

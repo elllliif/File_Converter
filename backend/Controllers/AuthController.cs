@@ -60,6 +60,7 @@ namespace ConverterApi.Controllers
 
             // Send Verification Email
             var frontendUrl = _config["FrontendUrl"] ?? "http://localhost:8000";
+            Console.WriteLine($"DEBUG: FrontendUrl from config is '{frontendUrl}'");
             var verifyLink = $"{frontendUrl}/verify.html?token={verificationToken}";
             await _emailService.SendVerificationEmailAsync(user.Email, verifyLink);
             
