@@ -58,18 +58,20 @@ namespace ConverterApi.Controllers
             _db.Users.Add(user);
             await _db.SaveChangesAsync();
 
-            // Send Verification Email
+            // Send Verification Email (Non-blocking / Fire-and-forget)
+            // Render Free Tier SMTP portlarını engellediği için mail beklemek UI'ı dondurur.
             var frontendUrl = (_config["FrontendUrl"] ?? _config["FRONTEND_URL"] ?? "https://file-converter-phi-nine.vercel.app").Trim();
             if (frontendUrl.EndsWith("/")) frontendUrl = frontendUrl.TrimEnd('/');
             
-            Console.WriteLine($"DEBUG: FrontendUrl for email is '{frontendUrl}'");
             var verifyLink = $"{frontendUrl}/verify.html?token={verificationToken}";
             
-            try {
-                await _emailService.SendVerificationEmailAsync(user.Email, verifyLink);
-            } catch (Exception ex) {
-                Console.WriteLine($"CRITICAL EMAIL ERROR: {ex.Message}");
-            }
+            _ = System.Threading.Tasks.Task.Run(async () => {
+                try {
+                    await _emailService.SendVerificationEmailAsync(user.Email, verifyLink);
+                } catch (Exception ex) {
+                    Console.WriteLine($"BACKGROUND EMAIL ERROR: {ex.Message}");
+                }
+            });
             
             // Console log for dev (optional, can be kept for server logs)
             Console.WriteLine($"VERIFICATION LINK: {verifyLink}");

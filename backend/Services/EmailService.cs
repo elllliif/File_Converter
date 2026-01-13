@@ -44,9 +44,7 @@ namespace ConverterApi.Services
                     <p>Şifre sıfırlama talebiniz alınmıştır. Aşağıdaki kodu kullanarak şifrenizi sıfırlayabilirsiniz:</p>
                     <p><strong>Sıfırlama Kodu: {resetToken}</strong></p>
                     <p>Bu kod 1 saat geçerlidir.</p>
-                    <p>İsteği yapmadıysanız bu mesajı görmezden gelebilirsiniz.</p>
-                    <p>Saygılarımızla,<br/>Converter Ekibi</p>
-                "
+                    <p>Saygılarımızla,<br/>Converter Ekibi</p>"
             };
 
             message.Body = bodyBuilder.ToMessageBody();
@@ -55,7 +53,7 @@ namespace ConverterApi.Services
             {
                 using (var client = new SmtpClient())
                 {
-                    client.Timeout = 5000; // 5 saniye zaman aşımı
+                    client.Timeout = 5000;
                     var options = smtpPort == 465 ? MailKit.Security.SecureSocketOptions.SslOnConnect : MailKit.Security.SecureSocketOptions.StartTls;
                     await client.ConnectAsync(smtpServer, smtpPort, options);
                     await client.AuthenticateAsync(smtpUsername, smtpPassword);
@@ -63,10 +61,9 @@ namespace ConverterApi.Services
                     await client.DisconnectAsync(true);
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // For development, just log. In production, handle properly
-                System.Console.WriteLine($"Email sending failed to {toEmail}");
+                _logger.LogError(ex, "STMP Error: Password reset failed for {Email}", toEmail);
             }
         }
 
@@ -92,18 +89,16 @@ namespace ConverterApi.Services
                     <p>Kaydınızı tamamlamak için lütfen aşağıdaki linke tıklayın:</p>
                     <p><a href='{verificationLink}'>Hesabımı Doğrula</a></p>
                     <p>veya bu linki tarayıcınıza yapıştırın: {verificationLink}</p>
-                    <p>Saygılarımızla,<br/>Converter Ekibi</p>
-                "
+                    <p>Saygılarımızla,<br/>Converter Ekibi</p>"
             };
 
             message.Body = bodyBuilder.ToMessageBody();
 
             try
             {
-                _logger.LogInformation("SMTP Attempt: Server={Server}, Port={Port}, User={User}", smtpServer, smtpPort, smtpUsername);
                 using (var client = new SmtpClient())
                 {
-                    client.Timeout = 5000; // 5 saniye zaman aşımı
+                    client.Timeout = 5000;
                     var options = smtpPort == 465 ? MailKit.Security.SecureSocketOptions.SslOnConnect : MailKit.Security.SecureSocketOptions.StartTls;
                     await client.ConnectAsync(smtpServer, smtpPort, options);
                     await client.AuthenticateAsync(smtpUsername, smtpPassword);
