@@ -7,14 +7,18 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Ensure Environment Variables are explicitly added
+builder.Configuration.AddEnvironmentVariables();
 
-var frontendUrl = builder.Configuration["FRONTEND_URL"] ?? "https://file-converter-phi-nine.vercel.app";
+var frontendUrl = builder.Configuration["FrontendUrl"] 
+                 ?? builder.Configuration["FRONTEND_URL"] 
+                 ?? "https://file-converter-phi-nine.vercel.app"; // Better default for production
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendOnly", policy =>
     {
-        policy.WithOrigins(frontendUrl)
+        policy.WithOrigins(frontendUrl, "http://localhost:8000")
               .AllowAnyMethod()
               .AllowAnyHeader();
     });
@@ -108,6 +112,16 @@ app.MapGet("/ip", (HttpContext ctx) => {
     var forwarded = ctx.Request.Headers["X-Forwarded-For"].FirstOrDefault();
     if (!string.IsNullOrEmpty(forwarded)) return Results.Ok(new { ip = forwarded.Split(',')[0] });
     return Results.Ok(new { ip = ctx.Connection.RemoteIpAddress?.ToString() });
+});
+
+app.MapGet("/config-debug", (IConfiguration config) => 
+{
+    var keys = config.AsEnumerable().Select(k => k.Key).ToList();
+    return Results.Ok(new { 
+        FoundKeys = keys,
+        FrontendUrl = config["FrontendUrl"] ?? config["FRONTEND_URL"] ?? "Still Null",
+        SmtpServer = config["Email:SmtpServer"] ?? "Still Null"
+    });
 });
 
 app.Run();
