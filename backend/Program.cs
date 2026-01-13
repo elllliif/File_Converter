@@ -9,11 +9,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
+var frontendUrl = builder.Configuration["FRONTEND_URL"] ?? "https://file-converter-phi-nine.vercel.app";
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("FrontendOnly", policy =>
     {
-        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+        policy.WithOrigins(frontendUrl)
+              .AllowAnyMethod()
+              .AllowAnyHeader();
     });
 });
 
@@ -48,18 +52,15 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    try { db.Database.Migrate(); } catch { /* migrations may be created later */ }
+    try { db.Database.Migrate(); } catch { }
 }
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseDeveloperExceptionPage();
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// Swagger'ı prod'da da görmek istersen bunu kaldırma:
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseRouting();
-app.UseCors("AllowAll");
+app.UseCors("FrontendOnly");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
