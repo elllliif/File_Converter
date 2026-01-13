@@ -10,9 +10,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Ensure Environment Variables are explicitly added
 builder.Configuration.AddEnvironmentVariables();
 
-var frontendUrl = builder.Configuration["FrontendUrl"] 
+var frontendUrl = (builder.Configuration["FrontendUrl"] 
                  ?? builder.Configuration["FRONTEND_URL"] 
-                 ?? "https://file-converter-phi-nine.vercel.app"; // Better default for production
+                 ?? "https://file-converter-phi-nine.vercel.app").Trim();
+
+if (frontendUrl.EndsWith("/")) frontendUrl = frontendUrl.TrimEnd('/');
 
 builder.Services.AddCors(options =>
 {

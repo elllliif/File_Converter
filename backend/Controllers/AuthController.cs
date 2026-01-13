@@ -59,10 +59,17 @@ namespace ConverterApi.Controllers
             await _db.SaveChangesAsync();
 
             // Send Verification Email
-            var frontendUrl = _config["FrontendUrl"] ?? "http://localhost:8000";
-            Console.WriteLine($"DEBUG: FrontendUrl from config is '{frontendUrl}'");
+            var frontendUrl = (_config["FrontendUrl"] ?? _config["FRONTEND_URL"] ?? "https://file-converter-phi-nine.vercel.app").Trim();
+            if (frontendUrl.EndsWith("/")) frontendUrl = frontendUrl.TrimEnd('/');
+            
+            Console.WriteLine($"DEBUG: FrontendUrl for email is '{frontendUrl}'");
             var verifyLink = $"{frontendUrl}/verify.html?token={verificationToken}";
-            await _emailService.SendVerificationEmailAsync(user.Email, verifyLink);
+            
+            try {
+                await _emailService.SendVerificationEmailAsync(user.Email, verifyLink);
+            } catch (Exception ex) {
+                Console.WriteLine($"CRITICAL EMAIL ERROR: {ex.Message}");
+            }
             
             // Console log for dev (optional, can be kept for server logs)
             Console.WriteLine($"VERIFICATION LINK: {verifyLink}");
